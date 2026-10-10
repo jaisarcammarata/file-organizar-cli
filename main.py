@@ -1,9 +1,10 @@
 import os
 import shutil
 
-# Usamos la carpeta 'prueba' que vimos en tu captura
+# Directorio de trabajo
 DIRECTORIO_DESTINO = "./prueba"
 
+# Diccionario de categorías y sus extensiones asociadas
 CATEGORIAS = {
     "Imagenes": ['.jpg', '.jpeg', '.png', '.gif', '.webp'],
     "Documentos": ['.pdf', '.doc', '.docx', '.txt', '.xlsx', '.pptx'],
@@ -16,17 +17,16 @@ def organizar_archivos():
         return
 
     archivos = os.listdir(DIRECTORIO_DESTINO)
-    print(f"--- Archivos encontrados en 'prueba': {archivos} ---")
+    print(f"\n--- Iniciando organización (Día 3) ---")
 
     for archivo in archivos:
         ruta_archivo = os.path.join(DIRECTORIO_DESTINO, archivo)
         
+        # Ignorar si es una carpeta
         if os.path.isdir(ruta_archivo):
             continue
 
         extension = os.path.splitext(archivo)[1].lower()
-        print(f"Revisando archivo: '{archivo}' con extensión: '{extension}'")
-        
         archivo_movido = False
 
         for categoria, extensiones in CATEGORIAS.items():
@@ -34,13 +34,25 @@ def organizar_archivos():
                 subcarpeta = os.path.join(DIRECTORIO_DESTINO, categoria)
                 os.makedirs(subcarpeta, exist_ok=True)
                 
-                shutil.move(ruta_archivo, os.path.join(subcarpeta, archivo))
-                print(f" ¡Movido con éxito: {archivo} -> /{categoria}/")
+                ruta_destino = os.path.join(subcarpeta, archivo)
+                
+                # Validación de seguridad: Si ya existe un archivo con el mismo nombre
+                if os.path.exists(ruta_destino):
+                    print(f"⚠️ El archivo '{archivo}' ya existe en /{categoria}/. Se omite para evitar duplicados.")
+                    archivo_movido = True
+                    break
+
+                try:
+                    shutil.move(ruta_archivo, ruta_destino)
+                    print(f"✅ Movido con éxito: {archivo} -> /{categoria}/")
+                except Exception as e:
+                    print(f"❌ Error al mover '{archivo}': {e}")
+                
                 archivo_movido = True
                 break
         
-        if not archivo_movido:
-            print(f"⚠️ La extensión '{extension}' del archivo '{archivo}' no está en ninguna categoría.")
+        if not archivo_movido and extension:
+            print(f"ℹ️ Sin categoría para: '{archivo}' (extensión {extension})")
 
 if __name__ == "__main__":
     organizar_archivos()
